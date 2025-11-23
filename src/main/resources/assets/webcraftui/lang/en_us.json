@@ -1,7 +1,6 @@
 {
   "itemGroup.webcraftui": "Example Mod Tab",
-  "block.webcraftui.example_block": "Example Block",
-  "item.webcraftui.example_item": "Example Item",
+
 
   "webcraftui.configuration.title": "WebcraftUI Configs",
   "webcraftui.configuration.section.webcraftui.common.toml": "WebcraftUI Configs",
@@ -9,5 +8,9 @@
   "webcraftui.configuration.items": "Item List",
   "webcraftui.configuration.logDirtBlock": "Log Dirt Block",
   "webcraftui.configuration.magicNumberIntroduction": "Magic Number Text",
-  "webcraftui.configuration.magicNumber": "Magic Number"
+  "webcraftui.configuration.magicNumber": "Magic Number",
+
+  "item.webcraftui.ui_editor": "UI Editor",
+
+  "block.webcraftui.computer": "Computer"
 }

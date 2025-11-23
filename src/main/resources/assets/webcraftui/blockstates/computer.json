@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "webcraftui:block/computer"
+    }
+  }
+}

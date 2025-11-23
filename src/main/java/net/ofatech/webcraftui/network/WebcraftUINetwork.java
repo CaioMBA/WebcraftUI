@@ -9,10 +9,6 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.ofatech.webcraftui.WebcraftUI;
 import net.ofatech.webcraftui.api.WebcraftUIApi;
 
-/**
- * Wires the custom payload for UI actions. The client should send {@link UiActionPayload}
- * when a data-action element is triggered; the handler runs server-side callbacks.
- */
 @EventBusSubscriber(modid = WebcraftUI.MOD_ID)
 public final class WebcraftUINetwork {
     private WebcraftUINetwork() {
@@ -25,7 +21,8 @@ public final class WebcraftUINetwork {
     }
 
     private static void handleAction(UiActionPayload payload, IPayloadContext context) {
-        context.workHandler().submitAsync(() -> {
+        // Runs on the correct server thread
+        context.enqueueWork(() -> {
             if (context.flow().isServerbound() && context.player() instanceof ServerPlayer serverPlayer) {
                 WebcraftUIApi.dispatchAction(serverPlayer, payload);
             }

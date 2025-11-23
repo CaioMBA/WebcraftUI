@@ -13,18 +13,20 @@ import java.util.Optional;
  * Demonstrates how another mod would register a UI and handle callbacks.
  */
 public final class ExampleUiRegistration {
-    public static final ResourceLocation UI_ID = ResourceLocation.fromNamespaceAndPath("examplemod", "test_ui");
+    public static final ResourceLocation UI_ID = ResourceLocation.fromNamespaceAndPath(WebcraftUI.MOD_ID, "example_inventory");
+    public static final ResourceLocation HUD_ID = ResourceLocation.fromNamespaceAndPath(WebcraftUI.MOD_ID, "hud_status");
 
     private ExampleUiRegistration() {
     }
 
     public static void registerExamples() {
-        ResourceLocation html = ResourceLocation.fromNamespaceAndPath(UI_ID.getNamespace(), "ui/test_ui.html");
-        ResourceLocation css = ResourceLocation.fromNamespaceAndPath(UI_ID.getNamespace(), "ui/test_ui.css");
-        ResourceLocation js = ResourceLocation.fromNamespaceAndPath(UI_ID.getNamespace(), "ui/test_ui.js");
+        ResourceLocation html = ResourceLocation.fromNamespaceAndPath(UI_ID.getNamespace(), "webcraftui/html/example_inventory.html");
+        ResourceLocation css = ResourceLocation.fromNamespaceAndPath(UI_ID.getNamespace(), "webcraftui/css/default_minecraft_ui.css");
 
-        WebcraftUIApi.registerUi(UI_ID, UiDocumentSource.resource(html),
-                Optional.of(UiDocumentSource.resource(css)), Optional.of(UiDocumentSource.resource(js)), ExampleUiRegistration::handleAction);
+        WebcraftUIApi.registerUi(UI_ID, UiDocumentSource.resource(html), Optional.of(UiDocumentSource.resource(css)), Optional.empty(), ExampleUiRegistration::handleAction);
+
+        ResourceLocation hudHtml = ResourceLocation.fromNamespaceAndPath(UI_ID.getNamespace(), "webcraftui/html/hud_status.html");
+        WebcraftUIApi.registerUi(HUD_ID, UiDocumentSource.resource(hudHtml), Optional.of(UiDocumentSource.resource(css)), Optional.empty(), ExampleUiRegistration::handleAction);
     }
 
     private static void handleAction(ServerPlayer player, String actionId, Map<String, String> payload) {

@@ -1,0 +1,11 @@
+body { color: #FFFFFF; font-size: 14px; }
+button, .mc-button {
+  margin: 4px;
+  padding: 4px 8px;
+  background: #6b6b6b;
+  color: #FFFFFF;
+}
+.mc-button-primary { background: #3c852f; color: #FFFFFF; }
+.mc-panel { padding: 6px; margin: 4px; background: #202020; }
+.mc-label { color: #E0E0E0; }
+.mc-hud-bar { padding: 2px 4px; background: #00000080; color: #FFFFFF; }

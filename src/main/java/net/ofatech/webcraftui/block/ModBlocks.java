@@ -17,7 +17,7 @@ public class ModBlocks {
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(WebcraftUI.MOD_ID);
 
     public static final DeferredBlock<Block> COMPUTER = registerBlock("computer",
-            () -> new Block(BlockBehaviour.Properties.of()
+            () -> new ComputerBlock(BlockBehaviour.Properties.of()
                     .sound(SoundType.AMETHYST)
                     .strength(1.5f)
                     .requiresCorrectToolForDrops()));

@@ -3,7 +3,6 @@ package net.ofatech.webcraftui.client;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.ofatech.webcraftui.WebcraftUI;
@@ -12,7 +11,9 @@ import net.ofatech.webcraftui.api.UiRegistration;
 import net.ofatech.webcraftui.network.UiActionPayload;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -26,8 +27,9 @@ public class HtmlUiScreen extends Screen {
     private final String html;
     private final Optional<String> css;
     private final Optional<String> js;
-    private MultiLineLabel htmlLabel = MultiLineLabel.EMPTY;
     private final Set<String> actions = new LinkedHashSet<>();
+    private List<HtmlRenderEngine.TextBlock> textBlocks = List.of();
+    private final List<Button> htmlButtons = new ArrayList<>();
 
     private HtmlUiScreen(UiRegistration registration, String html, Optional<String> css, Optional<String> js) {
         super(Component.literal(registration.uiId().toString()));
@@ -57,19 +59,15 @@ public class HtmlUiScreen extends Screen {
     @Override
     protected void init() {
         super.init();
-        this.htmlLabel = MultiLineLabel.create(this.font, Component.literal(html), this.width - 20);
+        this.clearWidgets();
+        HtmlRenderEngine.RenderResult layout = HtmlRenderEngine.build(this.font, html, css, 20, 30,
+                this.width - 40, (action, payload) -> sendAction(action, payload));
 
-        int top = 20;
-        int buttonWidth = Math.min(200, this.width - 40);
-        int x = (this.width - buttonWidth) / 2;
-        for (String action : actions) {
-            int y = top;
-            top += 24;
-            addRenderableWidget(Button.builder(Component.literal(action), btn -> sendAction(action))
-                    .pos(x, y)
-                    .size(buttonWidth, 20)
-                    .build());
-        }
+        this.textBlocks = layout.textBlocks();
+        this.htmlButtons.clear();
+        this.htmlButtons.addAll(layout.buttons());
+        this.actions.addAll(layout.actions());
+        this.htmlButtons.forEach(this::addRenderableWidget);
     }
 
     @Override
@@ -77,19 +75,27 @@ public class HtmlUiScreen extends Screen {
         this.renderBackground(graphics, mouseX, mouseY, partialTick);
         super.render(graphics, mouseX, mouseY, partialTick);
 
-        graphics.drawString(this.font, Component.literal("HTML content"), 10, this.height / 2, 0xFFFFFF);
-        this.htmlLabel.renderCentered(graphics, this.width / 2, this.height / 2 + 12);
-
+        graphics.drawString(this.font, Component.literal("HTML preview"), 10, 10, 0xFFFFFF);
         int infoY = this.height - 40;
         css.ifPresent(cssContent -> graphics.drawString(this.font, Component.literal("CSS loaded"), 10, infoY, 0xA0A0A0));
-        js.ifPresent(jsContent -> graphics.drawString(this.font, Component.literal("JS loaded"), 100, infoY, 0xA0A0A0));
+        js.ifPresent(jsContent -> graphics.drawString(this.font, Component.literal("JS detected"), 100, infoY, 0xA0A0A0));
+
+        for (HtmlRenderEngine.TextBlock block : textBlocks) {
+            block.backgroundColor().ifPresent(color -> graphics.fill(block.x() - 2, block.y() - 2,
+                    block.x() + block.width() + 2, block.y() + block.height() + 2, 0xAA000000 | color));
+            graphics.drawWordWrap(this.font, block.text(), block.x(), block.y(), block.width(), block.color());
+        }
     }
 
     private void sendAction(String actionId) {
+        sendAction(actionId, Map.of());
+    }
+
+    private void sendAction(String actionId, Map<String, String> payload) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.getConnection() != null) {
-            UiActionPayload payload = new UiActionPayload(registration.uiId(), actionId, Map.of());
-            mc.getConnection().send(payload);
+            UiActionPayload actionPayload = new UiActionPayload(registration.uiId(), actionId, payload);
+            mc.getConnection().send(actionPayload);
             mc.player.closeContainer();
         }
     }

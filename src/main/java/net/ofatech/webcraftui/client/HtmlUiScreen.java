@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.OptionalInt;
 
 /**
  * Simple client screen that surfaces HTML/CSS/JS content to the player. This is intentionally
@@ -60,14 +61,32 @@ public class HtmlUiScreen extends Screen {
     protected void init() {
         super.init();
         this.clearWidgets();
-        HtmlRenderEngine.RenderResult layout = HtmlRenderEngine.build(this.font, html, css, 20, 30,
-                this.width - 40, (action, payload) -> sendAction(action, payload));
+        if (!HtmlRenderEngine.isJsoupAvailable()) {
+            WebcraftUI.LOGGER.error("WebcraftUI could not find jsoup on the classpath. HTML screens will not render.");
+            showFallback(Component.literal("WebcraftUI failed to load: jsoup is missing."));
+            return;
+        }
 
-        this.textBlocks = layout.textBlocks();
+        try {
+            HtmlRenderEngine.RenderResult layout = HtmlRenderEngine.build(this.font, html, css, 20, 30,
+                    this.width - 40, (action, payload) -> sendAction(action, payload));
+
+            this.textBlocks = layout.textBlocks();
+            this.htmlButtons.clear();
+            this.htmlButtons.addAll(layout.buttons());
+            this.actions.addAll(layout.actions());
+            this.htmlButtons.forEach(this::addRenderableWidget);
+        } catch (Exception exception) {
+            WebcraftUI.LOGGER.error("Failed to build HTML UI {}", registration.uiId(), exception);
+            showFallback(Component.literal("WebcraftUI failed to load: " + exception.getMessage()));
+        }
+    }
+
+    private void showFallback(Component message) {
         this.htmlButtons.clear();
-        this.htmlButtons.addAll(layout.buttons());
-        this.actions.addAll(layout.actions());
-        this.htmlButtons.forEach(this::addRenderableWidget);
+        int messageWidth = this.width - 40;
+        int height = Math.max(this.font.lineHeight * 2, this.font.wordWrapHeight(message.getString(), messageWidth));
+        this.textBlocks = List.of(new HtmlRenderEngine.TextBlock(message, 20, 40, messageWidth, height, 0xFF5555, OptionalInt.empty()));
     }
 
     @Override

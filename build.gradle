@@ -19,6 +19,7 @@ group = mod_group_id
 
 repositories {
     // Add here additional repositories if required by some of the dependencies below.
+    mavenCentral()
 }
 
 base {
@@ -108,7 +109,8 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 // a dependency that will be present for runtime testing but that is
 // "optional", meaning it will not be pulled by dependents of this mod.
 configurations {
-    runtimeClasspath.extendsFrom localRuntime
+    bundled
+    runtimeClasspath.extendsFrom localRuntime, bundled
 }
 
 dependencies {
@@ -128,6 +130,14 @@ dependencies {
     // implementation files("libs/coolmod-${mc_version}-${coolmod_version}.jar")
 
     implementation 'org.jsoup:jsoup:1.17.2'
+    bundled 'org.jsoup:jsoup:1.17.2'
+}
+
+tasks.named('jar', Jar).configure {
+    // Bundle non-mod runtime libraries that need to be present in production.
+    from(configurations.bundled.collect { it.isDirectory() ? it : zipTree(it) }) {
+        exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
+    }
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

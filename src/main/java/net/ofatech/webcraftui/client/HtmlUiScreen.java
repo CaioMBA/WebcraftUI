@@ -2,13 +2,12 @@ package net.ofatech.webcraftui.client;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.ofatech.webcraftui.WebcraftUI;
-import net.ofatech.webcraftui.api.HtmlActionScanner;
 import net.ofatech.webcraftui.api.UiRegistration;
 import net.ofatech.webcraftui.network.UiActionPayload;
+import net.ofatech.webcraftui.ui.render.UiRenderer;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -29,8 +28,8 @@ public class HtmlUiScreen extends Screen {
     private final Optional<String> css;
     private final Optional<String> js;
     private final Set<String> actions = new LinkedHashSet<>();
-    private List<HtmlRenderEngine.TextBlock> textBlocks = List.of();
-    private final List<Button> htmlButtons = new ArrayList<>();
+    private List<UiRenderer.TextBlock> textBlocks = List.of();
+    private final List<net.minecraft.client.gui.components.Button> htmlButtons = new ArrayList<>();
 
     private HtmlUiScreen(UiRegistration registration, String html, Optional<String> css, Optional<String> js) {
         super(Component.literal(registration.uiId().toString()));
@@ -38,10 +37,7 @@ public class HtmlUiScreen extends Screen {
         this.html = html;
         this.css = css;
         this.js = js;
-        this.actions.addAll(HtmlActionScanner.findActions(html));
-        if (this.actions.isEmpty()) {
-            this.actions.addAll(registration.knownActions());
-        }
+        this.actions.addAll(registration.knownActions());
     }
 
     @Nullable
@@ -61,15 +57,9 @@ public class HtmlUiScreen extends Screen {
     protected void init() {
         super.init();
         this.clearWidgets();
-        if (!HtmlRenderEngine.isJsoupAvailable()) {
-            WebcraftUI.LOGGER.error("WebcraftUI could not find jsoup on the classpath. HTML screens will not render.");
-            showFallback(Component.literal("WebcraftUI failed to load: jsoup is missing."));
-            return;
-        }
-
         try {
-            HtmlRenderEngine.RenderResult layout = HtmlRenderEngine.build(this.font, html, css, 20, 30,
-                    this.width - 40, (action, payload) -> sendAction(action, payload));
+            HtmlRenderEngine.RenderResult layout = HtmlRenderEngine.build(this.registration, this.font, html, css, 20, 30,
+                    this.width - 40, this::sendAction);
 
             this.textBlocks = layout.textBlocks();
             this.htmlButtons.clear();
@@ -86,7 +76,7 @@ public class HtmlUiScreen extends Screen {
         this.htmlButtons.clear();
         int messageWidth = this.width - 40;
         int height = Math.max(this.font.lineHeight * 2, this.font.wordWrapHeight(message.getString(), messageWidth));
-        this.textBlocks = List.of(new HtmlRenderEngine.TextBlock(message, 20, 40, messageWidth, height, 0xFF5555, OptionalInt.empty()));
+        this.textBlocks = List.of(new UiRenderer.TextBlock(message, 20, 40, messageWidth, height, 0xFF5555, OptionalInt.empty()));
     }
 
     @Override
@@ -99,7 +89,7 @@ public class HtmlUiScreen extends Screen {
         css.ifPresent(cssContent -> graphics.drawString(this.font, Component.literal("CSS loaded"), 10, infoY, 0xA0A0A0));
         js.ifPresent(jsContent -> graphics.drawString(this.font, Component.literal("JS detected"), 100, infoY, 0xA0A0A0));
 
-        for (HtmlRenderEngine.TextBlock block : textBlocks) {
+        for (UiRenderer.TextBlock block : textBlocks) {
             block.backgroundColor().ifPresent(color -> graphics.fill(block.x() - 2, block.y() - 2,
                     block.x() + block.width() + 2, block.y() + block.height() + 2, 0xAA000000 | color));
             graphics.drawWordWrap(this.font, block.text(), block.x(), block.y(), block.width(), block.color());

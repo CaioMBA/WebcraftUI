@@ -133,21 +133,12 @@ dependencies {
     // Example mod dependency using a file as dependency
     // implementation files("libs/coolmod-${mc_version}-${coolmod_version}.jar")
 
-    implementation 'org.jsoup:jsoup:1.17.2'
-    bundled 'org.jsoup:jsoup:1.17.2'
-    localRuntime 'org.jsoup:jsoup:1.17.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
 }
 
 tasks.named('jar', Jar).configure {
     // Bundle non-mod runtime libraries that need to be present in production.
     from(configurations.bundled.collect { it.isDirectory() ? it : zipTree(it) }) {
-        exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
-    }
-
-    // Explicitly shade jsoup from the resolved runtime classpath as an extra guard so
-    // the HTML renderer can always find it in the distributed mod jar.
-    from(configurations.runtimeClasspath.filter { it.name.startsWith('jsoup') }
-            .collect { it.isDirectory() ? it : zipTree(it) }) {
         exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
     }
 }
@@ -194,6 +185,10 @@ publishing {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
 }
 
 // IDEA no longer automatically downloads sources/javadoc jars for dependencies, so we need to explicitly enable the behavior.

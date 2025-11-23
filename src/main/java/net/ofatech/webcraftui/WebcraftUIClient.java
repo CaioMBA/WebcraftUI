@@ -8,6 +8,8 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import net.neoforged.neoforge.client.event.RenderGuiEvent;
+import net.ofatech.webcraftui.client.HudOverlayManager;
 
 // This class will not load on dedicated servers. Accessing client side code from here is safe.
 @Mod(value = WebcraftUI.MOD_ID, dist = Dist.CLIENT)
@@ -20,5 +22,10 @@ public class WebcraftUIClient {
 
     @SubscribeEvent
     static void onClientSetup(FMLClientSetupEvent event) {
+    }
+
+    @SubscribeEvent
+    static void renderHud(RenderGuiEvent.Pre event) {
+        HudOverlayManager.render(event.getGuiGraphics());
     }
 }

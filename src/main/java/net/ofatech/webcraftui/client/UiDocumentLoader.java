@@ -24,6 +24,10 @@ public final class UiDocumentLoader {
         return source.resource().flatMap(UiDocumentLoader::loadResource);
     }
 
+    public static Optional<String> loadPath(String path) {
+        return loadResource(new net.minecraft.resources.ResourceLocation(path));
+    }
+
     private static Optional<String> loadResource(net.minecraft.resources.ResourceLocation location) {
         ResourceManager manager = Minecraft.getInstance().getResourceManager();
         try {

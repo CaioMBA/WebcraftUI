@@ -109,7 +109,11 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 // a dependency that will be present for runtime testing but that is
 // "optional", meaning it will not be pulled by dependents of this mod.
 configurations {
+    // Holds runtime-only libraries used during development without leaking them to consumers.
+    localRuntime
+    // Libraries that must be packaged inside the distributed mod jar.
     bundled
+
     runtimeClasspath.extendsFrom localRuntime, bundled
 }
 
@@ -131,6 +135,7 @@ dependencies {
 
     implementation 'org.jsoup:jsoup:1.17.2'
     bundled 'org.jsoup:jsoup:1.17.2'
+    localRuntime 'org.jsoup:jsoup:1.17.2'
 }
 
 tasks.named('jar', Jar).configure {

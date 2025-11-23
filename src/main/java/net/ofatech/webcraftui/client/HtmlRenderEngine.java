@@ -38,6 +38,9 @@ public final class HtmlRenderEngine {
 
     public static RenderResult build(Font font, String html, Optional<String> css, int x, int y, int width,
                                      BiConsumer<String, Map<String, String>> actionDispatcher) {
+        if (!isJsoupAvailable()) {
+            throw new IllegalStateException("Jsoup is not present on the classpath");
+        }
         Document document = Jsoup.parse(html);
         css.ifPresent(content -> document.head().appendElement("style").text(content));
 
@@ -50,6 +53,15 @@ public final class HtmlRenderEngine {
     }
 
     public record TextBlock(Component text, int x, int y, int width, int height, int color, OptionalInt backgroundColor) {
+    }
+
+    public static boolean isJsoupAvailable() {
+        try {
+            Class.forName("org.jsoup.Jsoup", false, HtmlRenderEngine.class.getClassLoader());
+            return true;
+        } catch (ClassNotFoundException | NoClassDefFoundError error) {
+            return false;
+        }
     }
 
     private static final class RenderContext {

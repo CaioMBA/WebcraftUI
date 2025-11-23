@@ -1,8 +1,8 @@
 package net.ofatech.webcraftui;
 
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.ofatech.webcraftui.block.ModBlocks;
+import net.ofatech.webcraftui.example.ExampleUiRegistration;
 import net.ofatech.webcraftui.item.ModItems;
 import org.slf4j.Logger;
 
@@ -38,6 +38,8 @@ public class WebcraftUI {
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
+        // Register a reference example to show mod authors how to plug into the API.
+        event.enqueueWork(ExampleUiRegistration::registerExamples);
     }
 
     // Add the example block item to the building blocks tab

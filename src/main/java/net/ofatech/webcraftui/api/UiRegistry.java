@@ -33,4 +33,8 @@ public final class UiRegistry {
     public Optional<UiRegistration> lookup(ResourceLocation uiId) {
         return Optional.ofNullable(registrations.get(uiId));
     }
+
+    public Set<UiRegistration> all() {
+        return Set.copyOf(registrations.values());
+    }
 }

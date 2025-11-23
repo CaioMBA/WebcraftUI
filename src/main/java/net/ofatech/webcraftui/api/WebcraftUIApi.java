@@ -9,6 +9,7 @@ import net.ofatech.webcraftui.network.UiActionPayload;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.loading.FMLEnvironment;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 
@@ -46,6 +47,10 @@ public final class WebcraftUIApi {
 
     public static Optional<UiRegistration> find(ResourceLocation uiId) {
         return REGISTRY.lookup(uiId);
+    }
+
+    public static Collection<UiRegistration> allRegistrations() {
+        return REGISTRY.all();
     }
 
     public static void pushStateToClient(ServerPlayer player, ResourceLocation uiId, Map<String, String> state) {

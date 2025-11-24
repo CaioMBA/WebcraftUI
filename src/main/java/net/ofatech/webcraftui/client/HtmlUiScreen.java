@@ -58,7 +58,7 @@ public class HtmlUiScreen extends Screen {
         super.init();
         this.clearWidgets();
         try {
-            HtmlRenderEngine.RenderResult layout = HtmlRenderEngine.build(this.registration, this.font, html, css, 20, 30,
+            UiRenderer.RenderResult layout = HtmlRenderEngine.build(this.registration, this.font, html, css, 20, 30,
                     this.width - 40, this::sendAction);
 
             this.textBlocks = layout.textBlocks();

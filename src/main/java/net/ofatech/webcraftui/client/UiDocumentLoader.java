@@ -1,6 +1,7 @@
 package net.ofatech.webcraftui.client;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.ofatech.webcraftui.WebcraftUI;
@@ -25,7 +26,12 @@ public final class UiDocumentLoader {
     }
 
     public static Optional<String> loadPath(String path) {
-        return loadResource(new net.minecraft.resources.ResourceLocation(path));
+        ResourceLocation loc = ResourceLocation.tryParse(path);
+        if (loc == null) {
+            WebcraftUI.LOGGER.warn("Invalid UI resource location: {}", path);
+            return Optional.empty();
+        }
+        return loadResource(loc);
     }
 
     private static Optional<String> loadResource(net.minecraft.resources.ResourceLocation location) {

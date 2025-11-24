@@ -93,7 +93,7 @@ public final class HtmlRenderEngine {
     }
 
     private static String loadDefaultTheme() {
-        Optional<String> css = UiDocumentLoader.loadPath("assets/webcraftui/css/default_minecraft_ui.css");
+        Optional<String> css = UiDocumentLoader.loadPath("webcraftui:css/default_minecraft_ui.css");
         return css.orElse("button{margin:4px;}body{color:#ffffff;}");
     }
 }

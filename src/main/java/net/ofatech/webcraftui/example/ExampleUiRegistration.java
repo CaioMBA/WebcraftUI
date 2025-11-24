@@ -20,12 +20,12 @@ public final class ExampleUiRegistration {
     }
 
     public static void registerExamples() {
-        ResourceLocation html = ResourceLocation.fromNamespaceAndPath(UI_ID.getNamespace(), "html/example_inventory.html");
-        ResourceLocation css = ResourceLocation.fromNamespaceAndPath(UI_ID.getNamespace(), "css/default_minecraft_ui.css");
+        ResourceLocation html = ResourceLocation.fromNamespaceAndPath(UI_ID.getNamespace(), "gui/html/example_inventory.html");
+        ResourceLocation css = ResourceLocation.fromNamespaceAndPath(UI_ID.getNamespace(), "gui/style/default_minecraft_ui.css");
 
         WebcraftUIApi.registerUi(UI_ID, UiDocumentSource.resource(html), Optional.of(UiDocumentSource.resource(css)), Optional.empty(), ExampleUiRegistration::handleAction);
 
-        ResourceLocation hudHtml = ResourceLocation.fromNamespaceAndPath(UI_ID.getNamespace(), "html/hud_status.html");
+        ResourceLocation hudHtml = ResourceLocation.fromNamespaceAndPath(UI_ID.getNamespace(), "gui/html/hud_status.html");
         WebcraftUIApi.registerUi(HUD_ID, UiDocumentSource.resource(hudHtml), Optional.of(UiDocumentSource.resource(css)), Optional.empty(), ExampleUiRegistration::handleAction);
     }
 

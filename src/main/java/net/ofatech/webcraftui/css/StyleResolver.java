@@ -1,5 +1,6 @@
 package net.ofatech.webcraftui.css;
 
+import net.ofatech.webcraftui.html.model.HtmlAttributes;
 import net.ofatech.webcraftui.html.model.HtmlElement;
 
 import java.util.Comparator;
@@ -34,7 +35,8 @@ public final class StyleResolver {
                                       Map<String, Integer> priority, int level) {
         stylesheet.rules().forEach(rule -> {
             if (rule.selectors().stream().anyMatch(selector -> selector.type() == CssSelectorType.TAG
-                    && selector.matches(element.tagName(), element.attribute("id").orElse(""), element.attribute("class").orElse("")))) {
+                    && selector.matches(element.tagName(), element.attribute(HtmlAttributes.ID).orElse(""),
+                    element.attribute(HtmlAttributes.CLASS).orElse("")))) {
                 merge(rule, values, priority, level);
             }
         });
@@ -42,7 +44,7 @@ public final class StyleResolver {
 
     private static void applyClassRules(HtmlElement element, CssStylesheet stylesheet, Map<String, String> values,
                                        Map<String, Integer> priority, int level) {
-        String classes = element.attribute("class").orElse("");
+        String classes = element.attribute(HtmlAttributes.CLASS).orElse("");
         if (classes.isEmpty()) {
             return;
         }
@@ -59,7 +61,7 @@ public final class StyleResolver {
 
     private static void applyIdRules(HtmlElement element, CssStylesheet stylesheet, Map<String, String> values,
                                      Map<String, Integer> priority, int level) {
-        Optional<String> id = element.attribute("id");
+        Optional<String> id = element.attribute(HtmlAttributes.ID);
         if (id.isEmpty()) {
             return;
         }
@@ -69,7 +71,7 @@ public final class StyleResolver {
     }
 
     private static void applyInlineRules(HtmlElement element, Map<String, String> values, Map<String, Integer> priority, int level) {
-        element.attribute("style").ifPresent(style -> {
+        element.attribute(HtmlAttributes.STYLE).ifPresent(style -> {
             Map<String, String> declarations = CssParser.parseDeclarations(style);
             declarations.forEach((key, value) -> merge(values, priority, level, key, value));
         });

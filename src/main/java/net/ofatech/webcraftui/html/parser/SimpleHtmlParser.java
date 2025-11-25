@@ -3,6 +3,7 @@ package net.ofatech.webcraftui.html.parser;
 import net.ofatech.webcraftui.html.model.HtmlDocument;
 import net.ofatech.webcraftui.html.model.HtmlElement;
 import net.ofatech.webcraftui.html.model.HtmlNode;
+import net.ofatech.webcraftui.html.model.HtmlTag;
 import net.ofatech.webcraftui.html.model.HtmlText;
 
 import java.util.ArrayDeque;
@@ -28,7 +29,7 @@ public final class SimpleHtmlParser {
     }
 
     public static HtmlDocument parse(String html, Function<String, Optional<String>> componentLoader) {
-        HtmlElement root = new HtmlElement("root");
+        HtmlElement root = new HtmlElement(HtmlTag.ROOT.tagName());
         Deque<HtmlElement> stack = new ArrayDeque<>();
         stack.push(root);
 
@@ -45,6 +46,7 @@ public final class SimpleHtmlParser {
 
             boolean closing = !matcher.group(1).isEmpty();
             String tag = matcher.group(2).toLowerCase();
+            HtmlTag htmlTag = HtmlTag.from(tag);
             String rawAttrs = matcher.group(3);
             boolean selfClosing = rawAttrs.endsWith("/");
             if (selfClosing) {
@@ -53,7 +55,7 @@ public final class SimpleHtmlParser {
 
             if (closing) {
                 popUntilTag(stack, tag);
-            } else if (tag.equals("component")) {
+            } else if (htmlTag == HtmlTag.COMPONENT) {
                 Map<String, String> attributes = AttributeParser.parse(rawAttrs);
                 String src = attributes.getOrDefault("src", "");
                 componentLoader.apply(src).ifPresent(content -> {
@@ -64,7 +66,7 @@ public final class SimpleHtmlParser {
                 HtmlElement element = new HtmlElement(tag);
                 AttributeParser.parse(rawAttrs).forEach(element::addAttribute);
                 current(stack).addChild(element);
-                if (!selfClosing && !isVoidElement(tag)) {
+                if (!selfClosing && !htmlTag.isVoid()) {
                     stack.push(element);
                 }
             }
@@ -92,14 +94,6 @@ public final class SimpleHtmlParser {
             }
         }
     }
-
-    private static boolean isVoidElement(String tag) {
-        return switch (tag) {
-            case "br", "img", "input", "meta", "link" -> true;
-            default -> false;
-        };
-    }
-
     private static final class AttributeParser {
         private static Map<String, String> parse(String raw) {
             java.util.HashMap<String, String> map = new java.util.HashMap<>();

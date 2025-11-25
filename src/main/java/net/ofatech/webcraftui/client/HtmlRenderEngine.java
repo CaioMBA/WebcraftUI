@@ -4,9 +4,13 @@ import net.minecraft.client.gui.Font;
 import net.ofatech.webcraftui.api.UiRegistration;
 import net.ofatech.webcraftui.css.CssParser;
 import net.ofatech.webcraftui.css.CssStylesheet;
+import net.minecraft.resources.ResourceLocation;
+import net.ofatech.webcraftui.WebcraftUI;
+import net.ofatech.webcraftui.html.model.HtmlAttributes;
 import net.ofatech.webcraftui.html.model.HtmlDocument;
 import net.ofatech.webcraftui.html.model.HtmlElement;
 import net.ofatech.webcraftui.html.model.HtmlNode;
+import net.ofatech.webcraftui.html.model.HtmlTag;
 import net.ofatech.webcraftui.html.model.HtmlText;
 import net.ofatech.webcraftui.html.parser.SimpleHtmlParser;
 import net.ofatech.webcraftui.ui.model.UiRoot;
@@ -64,8 +68,11 @@ public final class HtmlRenderEngine {
     private static void collectLinkedStyles(HtmlElement root, List<String> sink) {
         for (HtmlNode child : root.children()) {
             if (child instanceof HtmlElement element) {
-                if (element.tagName().equals("link") && element.attribute("rel").orElse("").equalsIgnoreCase("stylesheet")) {
-                    element.attribute("href").flatMap(UiDocumentLoader::loadPath).ifPresent(sink::add);
+                if (HtmlTag.from(element.tagName()) == HtmlTag.LINK
+                        && element.attribute(HtmlAttributes.REL).orElse("").equalsIgnoreCase("stylesheet")) {
+                    element.attribute(HtmlAttributes.HREF)
+                            .flatMap(HtmlRenderEngine::loadStylesheetResource)
+                            .ifPresent(sink::add);
                 }
                 collectLinkedStyles(element, sink);
             }
@@ -75,7 +82,7 @@ public final class HtmlRenderEngine {
     private static void collectInlineStyles(HtmlElement root, List<String> sink) {
         for (HtmlNode child : root.children()) {
             if (child instanceof HtmlElement element) {
-                if (element.tagName().equals("style")) {
+                if (HtmlTag.from(element.tagName()) == HtmlTag.STYLE) {
                     StringBuilder builder = new StringBuilder();
                     for (HtmlNode styleChild : element.children()) {
                         if (styleChild instanceof HtmlText text) {
@@ -95,5 +102,29 @@ public final class HtmlRenderEngine {
     private static String loadDefaultTheme() {
         Optional<String> css = UiDocumentLoader.loadPath("webcraftui:gui/style/default_minecraft_ui.css");
         return css.orElse("button{margin:4px;}body{color:#ffffff;}");
+    }
+
+    private static Optional<String> loadStylesheetResource(String href) {
+        if (!isStylesheetHref(href)) {
+            WebcraftUI.LOGGER.debug("Skipping non-stylesheet href {}", href);
+            return Optional.empty();
+        }
+        ResourceLocation location = ResourceLocation.tryParse(href);
+        if (location == null) {
+            WebcraftUI.LOGGER.warn("Invalid stylesheet href {}", href);
+            return Optional.empty();
+        }
+        return UiDocumentLoader.loadPath(location.toString());
+    }
+
+    private static boolean isStylesheetHref(String href) {
+        if (href == null || href.isBlank()) {
+            return false;
+        }
+        ResourceLocation location = ResourceLocation.tryParse(href);
+        if (location == null) {
+            return false;
+        }
+        return location.getPath().startsWith("gui/style/") && location.getPath().endsWith(".css");
     }
 }

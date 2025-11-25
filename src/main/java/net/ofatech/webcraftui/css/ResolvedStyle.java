@@ -24,7 +24,12 @@ public final class ResolvedStyle {
 
     public int getInt(String key, int fallback) {
         try {
-            return Integer.parseInt(properties.get(key.toLowerCase()));
+            String raw = properties.get(key.toLowerCase());
+            if (raw == null) {
+                return fallback;
+            }
+            raw = raw.replace("px", "").trim();
+            return Integer.parseInt(raw);
         } catch (Exception ignored) {
             return fallback;
         }
